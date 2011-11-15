@@ -1,8 +1,8 @@
 /*
  Demo Code for HDSP 2111 using SN74LS595N 
  Matt Joyce < matt@nycresistor.com >
- Mark Tabry 
- */
+ Thanks to Mark Tabry for assistance
+*/
 
 //Pin connected to latch pin (ST_CP) of 74HC595
 const int latchPin = 8;
