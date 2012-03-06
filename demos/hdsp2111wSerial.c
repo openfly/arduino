@@ -1,7 +1,7 @@
 /*
- Demo Code for HDSP 2111 using SN74LS595N 
- Matt Joyce < matt@nycresistor.com >
- Thanks to Mark Tabry for assistance
+Demo Code for HDSP 2111 using SN74LS595N
+Matt Joyce < matt@nycresistor.com >
+Thanks to Mark Tabry for assistance
 */
 
 //Pin connected to latch pin (ST_CP) of 74HC595
@@ -22,7 +22,7 @@ int incomingByte = 0;
 void setup() {
   //set pins to output because they are addressed in the main loop
   pinMode(latchPin, OUTPUT);
-  pinMode(dataPin, OUTPUT);  
+  pinMode(dataPin, OUTPUT);
   pinMode(clockPin, OUTPUT);
   pinMode(a0, OUTPUT);
   pinMode(a1, OUTPUT);
@@ -33,8 +33,9 @@ void setup() {
   pinMode(wr, OUTPUT);
   digitalWrite(ce, HIGH);
   digitalWrite(wr, HIGH);
-  
   resetDisplay();
+  Serial.begin(9600);
+
 }
 
 void resetDisplay() {
@@ -43,11 +44,11 @@ void resetDisplay() {
   digitalWrite(rst,HIGH);
   delayMicroseconds(150);
   digitalWrite(a3, HIGH);
-}   
+}
 
 void writeDisplay(char *input) {
 //  Serial.println(input);
-  for (int i=0; i<8; i++) {    
+  for (int i=0; i<8; i++) {
     digitalWrite(a0, (1&i)!=0?HIGH:LOW);
     digitalWrite(a1, (2&i)!=0?HIGH:LOW);
     digitalWrite(a2, (4&i)!=0?HIGH:LOW);
@@ -55,11 +56,11 @@ void writeDisplay(char *input) {
     digitalWrite(latchPin, LOW);
     shiftOut(dataPin, clockPin, MSBFIRST, input[i] );
     digitalWrite(latchPin, HIGH);
-    delay(1);    
+    delay(1);
     digitalWrite(ce, LOW);
     delay(1);
     digitalWrite(wr, LOW);
-    delay(1); 
+    delay(1);
     digitalWrite(wr, HIGH);
     delay(1);
     digitalWrite(ce, HIGH);
@@ -93,7 +94,29 @@ void scrollDisplay(char *words) {
 }
 
 void loop() {
-    char intro[] = "        Number 9 ";
-    scrollDisplay(intro);
-    delay(2000);
-}   
+  char buffer[64];
+  memset (buffer, 0, sizeof buffer);
+  int i = 0;
+  
+  // send data only when you receive data:
+  if (Serial.available() > 0) {
+    // read the incoming byte:
+    char ch;
+    bool id = false;
+    while(ch = Serial.read()) {
+      Serial.write(ch);
+      if(ch==0)
+        continue;
+      if(ch=='$') {
+        id=true;
+        continue;
+      }
+      if (ch == '\r' || i == 31 )
+        break;
+      buffer[i++] = ch;
+    }
+                          
+    scrollDisplay(buffer); 
+  } 
+  resetDisplay();
+} 
